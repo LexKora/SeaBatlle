@@ -32,7 +32,7 @@ class Ship():
         self.Field = Field
         self.coordinates = []
     def ship_installation(self, Field, human):
-        previous = None
+
         while len(self.coordinates) < self.deck:
             Field.graphic_field()
             print(f' палуба № {len(self.coordinates)+1}')
@@ -40,7 +40,6 @@ class Ship():
             if number_check(a) and checking_or_ships_nearby(Field, a, human, self.coordinates):
                 self.coordinates.append(a)
                 Field.character_replacement(a, Field.SHIP)
-                previous = a
         print(self.coordinates)
 
 class Fleet():

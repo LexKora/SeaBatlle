@@ -26,58 +26,50 @@ def number_check(num):
     return True
 
 def checking_or_ships_nearby(Field, cord, human, coordinates):
+
     if coordinates == None:
         coordinates = []
     num = None
     if num == None:
-        num = convert_number_to_digits(cord)
+        num = convert_number_to_digits(cord)#введённые координаты
     print(Field.LINES[num[0]-1][num[1]-1][0])
-    try:
-        if Field.LINES[num[0]-1][num[1]-1][0] == '#':  # если ставим на занятую клетку
-            print(E + ' Эта позиция уже занята!')
+
+    if Field.LINES[num[0]-1][num[1]-1][0] == Field.SHIP:  # если ставим на занятую клетку
+        print(E + ' Эта позиция уже занята!')
+        return False
+    def next_to_another_ship():
+            if human:
+                print(E + f' Рядом на {str(num[0]+i)+str(num[1]+j)} другой корабль !')
             return False
-    except IndexError:
-        print()
+
     for i in range(-1, 2):
-            for j in range(-1, 2):
-                #if num[0] == num[1] or num[0] - num[1] == 0:# а надо ли?
-                    #continue
-                #else:
-                    try:
-                        cordindefsym = Field.LINES[num[0]+i-1][num[1]+j-1][0]# Проверка на выпадение за пределы поля
+        for j in range(-1, 2):
+            try:
+                cordindefsym = Field.LINES[num[0]+i-1][num[1]+j-1][0]# Проверка на выпадение за пределы поля
+            except IndexError:
+                continue
 
+            if not len(coordinates):
+                if cordindefsym == Field.SHIP:
+                    return next_to_another_ship()
+            else:
+                prev = convert_number_to_digits(coordinates[-1])
+                print(f'{num[0] - prev[0]}   +    {num[1] - prev[1]}')
+                if abs(num[0] - prev[0]) > 1 or abs(num[1] - prev[1]) > 1:
+                    print(E + ' Не должно быть пробелов между палубами корабля!')
+                    return False
+                if num[0] != prev[0] and num[1] != prev[1]:# проверка на диагональ
+                     print(E + ' Нельзя ставить палубы по диагонали! ')
+                     return False
+                if cordindefsym == Field.SHIP and coordinates[-1] == str(num[0] + i - 1) + str(num[1] + j - 1):
+                    print(f'{coordinates[-1]} -- {str(num[0] + i - 1) + str(num[1] + j - 1)}')
+                    return next_to_another_ship()# если координаты совпадают с предидущей палубой
+                if len(coordinates) == 2:
 
-                    except IndexError:
-                        continue
-
-                    if len(coordinates) != 0:
-                        print(len(coordinates))
-                        prev = convert_number_to_digits(coordinates[-1])
-                        print(coordinates[-1] + ' !!!  ' + str(num[0] + i - 1) + str(num[1] + j - 1))
-                        if (num[0] - prev[0]) > 1 or (num[1] - prev[1]) > 1:
-                            print(E + ' Не должно быть пробелов между палубами корабля!')
-                            return False
-                        if num[0] != prev[0] and num[1] != prev[1]:# проверка на диагональ
-                            print(E + ' Нельзя ставить палубы по диагонали! ')
-                            return False
-
-
-                        if (num[0]) == prev[0] and (num[1]) == prev[1]:
-                            raise UnboundLocalError
-                            print(f'{num[0]} = {prev[0]}  {num[1]} = {prev[1]}')
-                            print(E + ' Здесь предидущая палуба!')
-                            return False  # если координаты совпадают с предидущей палубой
-
-
-                        elif cordindefsym == Field.SHIP and coordinates[-1] != str(num[0]+i-1)+ str(num[1]+j-1):
-                                 print(f'{coordinates[-1]} мммм {int(str(num[0]+i-1)+ str(num[1]+j-1))} ')
-                                 if human:
-                                     print(f'{num[0]+i} = {prev[0]}  {num[1] + j} = {prev[1]}')
-                                     print(E + ' Рядом другой корабль !')
-                                     return False
-
-
+    print('True')
     return True
+
+
 def convert_number_to_digits(num):
     character1 = int(list(str(num))[0])
     character2 = int(list(str(num))[1])
