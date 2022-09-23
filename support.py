@@ -1,7 +1,7 @@
 import random
 
 E = 'Проблемы ввода!!!'
-
+PROBLEMSCOORDINATS = {'11': ['13', '31'], '16': ['14', '36'], '61': ['41', '63'], '66': ['46', '64']}
 def random_6():
     return random.randint(1, 6)
 
@@ -78,15 +78,23 @@ def checking_or_ships_nearby(Field, cord, human, coordinates):
                 if num[0] != prev[0] and num[1] != prev[1]:# проверка на диагональ
                      print(E + ' Нельзя ставить палубы по диагонали! ')
                      return False
-                if cordindefsym == Field.SHIP and coordinates[-1] == str(num[0] + i - 1) + str(num[1] + j - 1):
+                if cordindefsym == Field.SHIP and coordinates[-1] != convert_digits_to_number(num[0] + i, num[1] + j):
+                    print(cordindefsym)
                     print(f'{coordinates[-1]} -- {str(num[0] + i - 1) + str(num[1] + j - 1)}')
                     return next_to_another_ship()# если координаты совпадают с предидущей палубой
 
-
-
-    print('True')
     return True
+def space_for_two_decks(Field, coord, decks, numberofdecks, human):
 
+    if decks == 2 and numberofdecks == 1 :
+        for key, listok in PROBLEMSCOORDINATS.items():
+            if key == coord:
+                if Field.LINES[convert_number_to_digits(listok[0])[0]-1][convert_number_to_digits(listok[0])[1]-1][0] == Field.SHIP\
+                    and Field.LINES[convert_number_to_digits(listok[1])[0]-1][convert_number_to_digits(listok[1])[1]-1][0] == Field.SHIP:
+                    if human:
+                        print(E + ' Здесь не поместится двухпалйбный корабль!')
+                    return False
+    return True
 
 def convert_number_to_digits(num):
     character1 = int(list(str(num))[0])

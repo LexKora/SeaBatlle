@@ -37,7 +37,9 @@ class Ship():
             Field.graphic_field()
             print(f' палуба № {len(self.coordinates)+1}')
             a = input('Вводиим координаты : ')
-            if number_check(a) and checking_or_ships_nearby(Field, a, human, self.coordinates):
+            print(f'{self.deck}  {len(self.coordinates)+1}  {human}')
+            if number_check(a) and checking_or_ships_nearby(Field, a, human, self.coordinates) and\
+                    space_for_two_decks(Field, a, self.deck, len(self.coordinates)+1, human):
                 self.coordinates.append(a)
                 Field.character_replacement(a, Field.SHIP)
         print(self.coordinates)
