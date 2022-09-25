@@ -34,14 +34,16 @@ class Ship():
     def ship_installation(self, Field, human):
 
         while len(self.coordinates) < self.deck:
-            Field.graphic_field()
-            print(f' палуба № {len(self.coordinates)+1}')
-            a = input('Вводиим координаты : ')
+            if human:
+                print(f' палуба № {len(self.coordinates) + 1}')
+                Field.graphic_field()
+                a = input('Вводиим координаты : ')
+            else: a = convert_digits_to_number(random_num(6),random_num(6))
             if number_check(a) and checking_or_ships_nearby(Field, a, human, self.coordinates) and\
                     space_for_two_decks(Field, a, self.deck, len(self.coordinates)+1, human):
                 self.coordinates.append(a)
                 Field.character_replacement(a, Field.SHIP)
-        print(self.coordinates)
+
 
 class Fleet():
 
@@ -64,15 +66,59 @@ def generator_of_ships(Field , HField, Fleet, human ):
                 flag = True
                 while flag:
                     humship = Ship(j)
-                    print(f'{j} палубный №{p} ', end='')
+                    if human:
+                        print(f'{j} палубный №{p} ', end='')
                     humship.ship_installation(Field, human)
                     if enough_space_for_ships(HField, humship, p) == False:
-                        print('Корабли не поместятся!!! Переставьте последний корабль!!!')
-                        print(HField.graphic_field())
+                        if human:
+                            print('Корабли не поместятся!!! Переставьте последний корабль!!!')
+                            print(HField.graphic_field())
                         remove_last_points(Field, humship.coordinates, Field.EMPTY)
                     else: flag = False
-                print(HField.graphic_field())
                 Fleet.add_in_fleet(humship)
+
+def computer_layout(Field, HField):
+    generator_of_ships()
+
+def fire_to_ship(Field, HField, CField, CHField, Fleet, CFleet):
+    while not len(Fleet.orderoffleet) or not len(CFleet.orderoffleet):
+        human = True
+        while human:
+            fire = input('Введите координаты выстрела! ')
+            if CField.LINES[convert_number_to_digits(fire)[0],convert_number_to_digits(fire)[1]][0] == CField.EMPTY:
+                human = dmg_(CField, HField, CFleet, fire)
+
+
+def dmg_(EnemyField, Field, EnemyFleet, fire):
+    for ship in EnemyFleet:
+        for deck, n in enumerate(ship):
+            if deck == fire:
+                ship[n] = deck + Field.WRECK
+                Field.character_replacement(fire, Field.WRECK)
+                EnemyField.character_replacement(fire, Field.WRECK)
+                count = 0
+                for d in ship:
+                    if Field.WRECK in list(d):
+                        count += 1
+                if len(ship) == count:
+
+                    for dd in ship:#помечаем все точки вокруг потопленного корабля взрывами
+                        num = convert_number_to_digits(dd)
+                        for i in (-1, 2):
+                            for j in (-1, 2):
+                                try:
+                                    cordindefsym = Field.LINES[num[0] + i - 1][num[1] + j - 1][
+                                        0]  # Проверка на выпадение за пределы поля
+                                except IndexError:  # убрать?
+                                    continue
+                                if cordindefsym == Field.EMPTY:
+                                    Field.character_replacement(convert_digits_to_number(num[0] + i - 1, num[1] + j - 1),\
+                                                                Field.EXPLOSION)
+                    EnemyFleet.del_in_fleet(ship)
+                return True
+    return False
+
+
 
 
 

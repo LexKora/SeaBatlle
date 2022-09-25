@@ -2,11 +2,11 @@ import random
 
 E = 'Проблемы ввода!!!'
 PROBLEMSCOORDINATS = {'11': ['13', '31'], '16': ['14', '36'], '61': ['41', '63'], '66': ['46', '64']}
-def random_6():
-    return random.randint(1, 6)
+def random_list(listok):
+    return  listok[random.randint(1, len(listok))]
 
-def random_8():
-    return random.randint(1, 8)
+def random_num(num):
+    return random.randint(1, num)
 
 def number_check(num):
     if num == None:
@@ -37,11 +37,12 @@ def checking_or_ships_nearby(Field, cord, human, coordinates):
         num = convert_number_to_digits(cord)#введённые координаты
 
     if Field.LINES[num[0]-1][num[1]-1][0] == Field.SHIP:  # если ставим на занятую клетку
-        print(E + ' Эта позиция уже занята!')
+        if human:
+            print(E + ' Эта позиция уже занята!')
         return False
     def next_to_another_ship():
             if human:
-                print(E + f' Рядом на {str(num[0]+i)+str(num[1]+j)} другой корабль !')
+                print(E + f' Рядом другой корабль !')
             return False
 
     for i in range(-1, 2):
@@ -70,14 +71,17 @@ def checking_or_ships_nearby(Field, cord, human, coordinates):
                                     cord == convert_digits_to_number(max(a[0], b[0]) + 1, a[1]):
                                 return True
                         else:
-                            print(E + ' Трёхпалубный корабль должен быть расположен по прямой и без пробелов!')
+                            if human:
+                                print(E + ' Трёхпалубный корабль должен быть расположен по прямой и без пробелов!')
                             return False
 
                     if abs(num[0] - prev[0]) > 1 or abs(num[1] - prev[1]) > 1:
-                        print(E + ' Не должно быть пробелов между палубами корабля!')
+                        if human:
+                            print(E + ' Не должно быть пробелов между палубами корабля!')
                         return False
                     if num[0] != prev[0] and num[1] != prev[1]:  # проверка на диагональ
-                        print(E + ' Нельзя ставить палубы по диагонали! ')
+                        if human:
+                            print(E + ' Нельзя ставить палубы по диагонали! ')
                         return False
                     if cordindefsym == Field.SHIP and coordinates[-1] != convert_digits_to_number(num[0] + i,
                                                                                                   num[1] + j):
@@ -97,8 +101,6 @@ def space_for_two_decks(Field, coord, decks, numberofdecks, human):
     return True
 def enough_space_for_ships(HField, ship, numofship):
     lastpoints = []
-    print(lastpoints, end='')
-    print(' Не должно быть координат')
     for coord in ship.coordinates:#добавляем все точки куда нельзя ставить палубы
         num = convert_number_to_digits(coord)
         for i in range(-1, 2):
@@ -107,11 +109,9 @@ def enough_space_for_ships(HField, ship, numofship):
                     try:
                         cordindefsym = HField.LINES[num[0] + i - 1][num[1] + j - 1][0]
                     except IndexError:
-                        print('Ошибка!!!')#убрать?
                         continue
 
                     if cordindefsym == HField.EMPTY:
-                        print(f'{num[0]} + {i} = {num[0] + i}  {num[1]} + {j} = {num[1] + j}')
                         point = convert_digits_to_number(num[0] + i, num[1] + j)
                         lastpoints.append(point)
                         HField.character_replacement(point, HField.EXPLOSION)
@@ -123,7 +123,6 @@ def enough_space_for_ships(HField, ship, numofship):
             for point in line:
                 if point[0] == HField.EMPTY:
                     count += 1
-        print(f'счёт {count}')
         return count
 
     if ship.deck == 2 and numofship == 2:#проверяем второй двухпалубный
@@ -143,7 +142,6 @@ def enough_space_for_ships(HField, ship, numofship):
                 remove_last_points(HField, lastpoints, HField.EMPTY)
                 return False
     return True
-
 def convert_number_to_digits(num):
     character1 = int(list(str(num))[0])
     character2 = int(list(str(num))[1])
