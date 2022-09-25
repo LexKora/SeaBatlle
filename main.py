@@ -37,7 +37,6 @@ class Ship():
             Field.graphic_field()
             print(f' палуба № {len(self.coordinates)+1}')
             a = input('Вводиим координаты : ')
-            print(f'{self.deck}  {len(self.coordinates)+1}  {human}')
             if number_check(a) and checking_or_ships_nearby(Field, a, human, self.coordinates) and\
                     space_for_two_decks(Field, a, self.deck, len(self.coordinates)+1, human):
                 self.coordinates.append(a)
@@ -57,14 +56,22 @@ class Fleet():
             self.orderoffleet.pop(ship)
 
 
-def generator_of_ships(Field , Fleet, human ):
+def generator_of_ships(Field , HField, Fleet, human ):
     for i in range(1, 4): # количество кораблей
 
             j = 4 - i
             for p in range(1, 5 - j):# палубы кораблей
-                humship = Ship(j)
-                print(f'{j} палубный №{p} ', end='')
-                humship.ship_installation(Field, human)
+                flag = True
+                while flag:
+                    humship = Ship(j)
+                    print(f'{j} палубный №{p} ', end='')
+                    humship.ship_installation(Field, human)
+                    if enough_space_for_ships(HField, humship, p) == False:
+                        print('Корабли не поместятся!!! Переставьте последний корабль!!!')
+                        print(HField.graphic_field())
+                        remove_last_points(Field, humship.coordinates, Field.EMPTY)
+                    else: flag = False
+                print(HField.graphic_field())
                 Fleet.add_in_fleet(humship)
 
 
