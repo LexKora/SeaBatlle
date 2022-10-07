@@ -20,8 +20,11 @@ class Field():
                 print(self.LINES[i][j][0] + '|', end='')
             print()
 
-    def character_replacement(self, place, symbol):
-       self.LINES[convert_number_to_digits(place)[0]-1][convert_number_to_digits(place)[1]-1][0] = symbol
+    def character_replacement(self, place, symbol):#сюда подаём координаты без исправлений
+        try:
+            self.LINES[convert_number_to_digits(place)[0]-1][convert_number_to_digits(place)[1]-1][0] = symbol
+        except IndexError:
+            pass
 
 
 
@@ -54,8 +57,10 @@ class Fleet():
         self.orderoffleet.append(ship)
 
     def del_in_fleet(self, ship):
-        if not len(ship):
-            self.orderoffleet.pop(ship)
+        for n, thisship in enumerate(self.orderoffleet):
+            if thisship is ship:
+                self.orderoffleet.pop(n)
+                print('Корабль потоплен!!!')
 
 
 def generator_of_ships(Field , HField, Fleet, human ):
@@ -77,45 +82,113 @@ def generator_of_ships(Field , HField, Fleet, human ):
                     else: flag = False
                 Fleet.add_in_fleet(humship)
 
-def computer_layout(Field, HField):
-    generator_of_ships()
 
-def fire_to_ship(Field, HField, CField, CHField, Fleet, CFleet):
-    while not len(Fleet.orderoffleet) or not len(CFleet.orderoffleet):
+def fire_to_ship(Field, FireField, CField, CFireField, Fleet, CFleet):
+    fire_to_ship.computerhit = [False, 0]
+    firelist = []
+    while len(Fleet.orderoffleet) and len(CFleet.orderoffleet):
+        print(f'{len(Fleet.orderoffleet)} кораблей игрока и {len(CFleet.orderoffleet)} кораблей компьютера')
         human = True
-        while human:
-            fire = input('Введите координаты выстрела! ')
-            if CField.LINES[convert_number_to_digits(fire)[0],convert_number_to_digits(fire)[1]][0] == CField.EMPTY:
-                human = dmg_(CField, HField, CFleet, fire)
+        computer = True
+
+        while human and len(CFleet.orderoffleet):
+            print('Ваше поле для стрельбы.')
+            FireField.graphic_field()
+            hufire = input('Введите координаты выстрела: ')
+            if number_check(hufire):
+                fire1, fire2 = convert_number_to_digits(hufire)
+                if return_character(FireField, fire1, fire2) == FireField.EMPTY:#проверка на огонь по ненужным координатам
+                    human = dmg_(CField, FireField, CFleet, convert_digits_to_number(fire1, fire2), computerflag=False)
+                else: print(' Нет смысла сюда стрелять! Попробуйте ещё раз!')
 
 
-def dmg_(EnemyField, Field, EnemyFleet, fire):
-    for ship in EnemyFleet:
-        for deck, n in enumerate(ship):
+        while computer and len(Fleet.orderoffleet) and len(CFleet.orderoffleet):
+            if fire_to_ship.computerhit[1] == 0:
+                firelist = []
+            if fire_to_ship.computerhit[0] and fire_to_ship.computerhit[1] != 0:
+                fire1, fire2 = convert_number_to_digits(comfire)
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
+                        if abs(i) != abs(j) and 7 > (fire1+i) > 0 and 7 > (fire2+j) > 0 \
+                                and return_character(CFireField, fire1+i, fire2+j) == Field.EMPTY:
+                            firelist.append(convert_digits_to_number(fire1+i, fire2+j))
+                if fire_to_ship.computerhit[1] == 2 and len(firelist) > 1:#стрельба компьютера по трёхпалубному после двух попаданей
+                    coincidence = False
+                    while len(firelist) > 1 and coincidence:
+                        for n in range(len(firelist)):
+                            if (list(firelist[0])[0] == list(firelist[n+1])[0] and abs(int(list(firelist[0])[1])-int(list(firelist[n+1])[1])) ==2) or \
+                                    (list(firelist[0])[1] == list(firelist[n + 1])[1] and abs(
+                                        int(list(firelist[0])[0]) - int(list(firelist[n + 1])[0])) == 2):
+                                coincidence = True
+                                newfirelist = [firelist[0], firelist[n+1]]
+                                firelist = newfirelist
+                                break
+                        if not coincidence:
+                            firelist.pop(0)
+
+
+                print(firelist)
+                comfire = random_list(firelist)
+                firelist.remove(comfire)
+            elif not fire_to_ship.computerhit[0] and fire_to_ship.computerhit[1] != 0:
+                print(firelist)
+                comfire = random_list(firelist)
+                firelist.remove(comfire)
+            else:
+                comfire = convert_digits_to_number(random_num(6), random_num(6))
+            if return_character(CFireField, *comfire) == CFireField.EMPTY:
+                print(f'Компьютер стреляет {comfire}!')
+                computer = dmg_(Field, CFireField, Fleet, comfire, computerflag=True)
+                fire_to_ship.computerhit[0] = computer# флаг того что компьютер попал
+                CFireField.graphic_field()
+
+    if not len(Fleet.orderoffleet):
+        print('Победил компьютер!!!')
+        print('Флот компьютера: ')
+        CField.graphic_field()
+    else:print('Вы победили!!!')
+
+
+def dmg_(EnemyField, Field, EnemyFleet, fire, computerflag):
+    for ship in EnemyFleet.orderoffleet:
+        for n, deck in enumerate(ship.coordinates):
             if deck == fire:
-                ship[n] = deck + Field.WRECK
+                ship.coordinates[n] = deck + Field.WRECK
                 Field.character_replacement(fire, Field.WRECK)
                 EnemyField.character_replacement(fire, Field.WRECK)
+                print('Попадание!!!')
+                print(fire_to_ship.computerhit)
+                if computerflag:
+                    fire_to_ship.computerhit[0] = True
+                    fire_to_ship.computerhit[1] = fire_to_ship.computerhit[1]+1
+                print(fire_to_ship.computerhit)
                 count = 0
-                for d in ship:
+                for d in ship.coordinates:
                     if Field.WRECK in list(d):
                         count += 1
-                if len(ship) == count:
-
-                    for dd in ship:#помечаем все точки вокруг потопленного корабля взрывами
-                        num = convert_number_to_digits(dd)
-                        for i in (-1, 2):
-                            for j in (-1, 2):
+                if len(ship.coordinates) == count:#помечаем все точки вокруг потопленного корабля взрывами
+                    for dd in ship.coordinates:
+                        num = convert_number_to_digits(dd)#здесь цифры по координатам
+                        print(num)
+                        for i in range(-1, 2):
+                            for j in range(-1, 2):
                                 try:
-                                    cordindefsym = Field.LINES[num[0] + i - 1][num[1] + j - 1][
-                                        0]  # Проверка на выпадение за пределы поля
-                                except IndexError:  # убрать?
+                                    cordindefsym = return_character(Field, num[0] + i, num[1] + j)#Field.LINES[num[0] + i - 1][num[1] + j - 1][0]
+                                except IndexError:
                                     continue
-                                if cordindefsym == Field.EMPTY:
-                                    Field.character_replacement(convert_digits_to_number(num[0] + i - 1, num[1] + j - 1),\
-                                                                Field.EXPLOSION)
+                                if cordindefsym == Field.EMPTY and (num[0] + i) > 0 and (num[1] + j) > 0:
+                                    Field.character_replacement(convert_digits_to_number(num[0] + i, num[1] + j), Field.EXPLOSION)
                     EnemyFleet.del_in_fleet(ship)
+                    if computerflag:
+                        fire_to_ship.computerhit[1] = 0
+                        fire_to_ship.computerhit[0] = True
+                    print(fire_to_ship.computerhit)
+
                 return True
+    Field.character_replacement(fire, Field.EXPLOSION)
+    fire_to_ship.computerhit[0] = False
+    print('Промах... ')
+    print(fire_to_ship.computerhit)
     return False
 
 

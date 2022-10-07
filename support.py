@@ -3,7 +3,10 @@ import random
 E = 'Проблемы ввода!!!'
 PROBLEMSCOORDINATS = {'11': ['13', '31'], '16': ['14', '36'], '61': ['41', '63'], '66': ['46', '64']}
 def random_list(listok):
-    return  listok[random.randint(1, len(listok))]
+    print(f'{listok} листок')
+    a = listok[random.randint(0, len(listok))-1] if len(listok) > 1 else listok[0]
+    print(f'{a} координата')
+    return a
 
 def random_num(num):
     return random.randint(1, num)
@@ -25,7 +28,6 @@ def number_check(num):
             if not (0 < a < 7):
                 print(E + ' Вы вышли за пределы поля!!!')
                 return False
-    num = None
     return True
 
 def checking_or_ships_nearby(Field, cord, human, coordinates):
@@ -153,3 +155,6 @@ def convert_digits_to_number(a, b):
 def remove_last_points(Field, lastpoints, sym):
     for point in lastpoints:
         Field.character_replacement(point, sym)
+
+def return_character(Field, cord1, cord2):
+    return Field.LINES[int(cord1)-1][int(cord2)-1][0]
