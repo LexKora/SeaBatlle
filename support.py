@@ -3,10 +3,7 @@ import random
 E = 'Проблемы ввода!!!'
 PROBLEMSCOORDINATS = {'11': ['13', '31'], '16': ['14', '36'], '61': ['41', '63'], '66': ['46', '64']}
 def random_list(listok):
-    print(f'{listok} листок')
-    a = listok[random.randint(0, len(listok))-1] if len(listok) > 1 else listok[0]
-    print(f'{a} координата')
-    return a
+    return listok[random.randint(0, len(listok))-1] if len(listok) > 1 else listok[0]
 
 def random_num(num):
     return random.randint(1, num)
@@ -36,7 +33,7 @@ def checking_or_ships_nearby(Field, cord, human, coordinates):
         coordinates = []
     num = None
     if num == None:
-        num = convert_number_to_digits(cord)#введённые координаты
+        num = convert_number_to_digits(cord)
 
     if Field.LINES[num[0]-1][num[1]-1][0] == Field.SHIP:  # если ставим на занятую клетку
         if human:
@@ -53,7 +50,7 @@ def checking_or_ships_nearby(Field, cord, human, coordinates):
                 try:
                     cordindefsym = Field.LINES[num[0] + i - 1][num[1] + j - 1][
                         0]  # Проверка на выпадение за пределы поля
-                except IndexError:  # убрать?
+                except IndexError:
                     continue
 
                 if not len(coordinates):
@@ -92,7 +89,7 @@ def checking_or_ships_nearby(Field, cord, human, coordinates):
     return True
 def space_for_two_decks(Field, coord, decks, numberofdecks, human):
 
-    if decks == 2 and numberofdecks == 1 :
+    if decks == 2 and numberofdecks == 1:
         for key, listok in PROBLEMSCOORDINATS.items():
             if key == coord:
                 if Field.LINES[convert_number_to_digits(listok[0])[0]-1][convert_number_to_digits(listok[0])[1]-1][0] == Field.SHIP\
@@ -107,7 +104,7 @@ def enough_space_for_ships(HField, ship, numofship):
         num = convert_number_to_digits(coord)
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if (num[0] + i - 1) >= 0 and (num[1] + j - 1) >=0:
+                if (num[0] + i - 1) >= 0 and (num[1] + j - 1) >= 0:
                     try:
                         cordindefsym = HField.LINES[num[0] + i - 1][num[1] + j - 1][0]
                     except IndexError:
@@ -127,15 +124,42 @@ def enough_space_for_ships(HField, ship, numofship):
                     count += 1
         return count
 
+    if ship.deck == 2 and numofship == 1 and count_of_empty(HField) == 9:#проверяем первый двухпалубный
+        remove_last_points(HField, lastpoints, HField.EMPTY)
+        return False
     if ship.deck == 2 and numofship == 2:#проверяем второй двухпалубный
         count = count_of_empty(HField)
         if count < 5:
             remove_last_points(HField, lastpoints, HField.EMPTY)
             return False
+        if count == 6:# если шесть клеток в одном углу и ещё 3 однопалубных
+            n = 0
+            for key, listok in PROBLEMSCOORDINATS.items():
+                if return_character(HField, *key) == HField.EMPTY:
+                    n += 1
+            if n == 1:
+                remove_last_points(HField, lastpoints, HField.EMPTY)
+                return False
+            else: return True
+
 
     if ship.deck == 1:
         count = count_of_empty(HField)
         if numofship == 1:
+            if count in [3, 4]:# проверка на углы поля с 3-4 клетками
+                for key, listok in PROBLEMSCOORDINATS.items():
+                    if return_character(HField, *key) == HField.EMPTY:
+                        key1, key2 = convert_number_to_digits(key)
+                        count2 = 0
+                        for i in range(-1, 2):
+                            for j in range(-1, 2):
+                                if 7 > (key1 + i) > 0 and 7 > (key2 + j) > 0 and\
+                                    return_character(HField, key1 + i, key2 + j) == HField.EMPTY:
+                                    count2 += 1
+                                else: continue
+                        if count == count2:
+                            return False
+
             if count < 3:
                 remove_last_points(HField, lastpoints, HField.EMPTY)
                 return False
@@ -158,3 +182,7 @@ def remove_last_points(Field, lastpoints, sym):
 
 def return_character(Field, cord1, cord2):
     return Field.LINES[int(cord1)-1][int(cord2)-1][0]
+
+def line_check(first1, second1):
+    return True if first1 == second1 else False
+
