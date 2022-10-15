@@ -1,10 +1,11 @@
-from support import *
+
 from main import *
 
 gameflag = True
 CONTROLLIST = ['Y', 'y', 'N', 'n']
+T = 'Вводите двухзначные чиисла где первая цифра горизонталь а вторая вертикаль '
 while gameflag:
-    HumanField = Field()# где человек расставляет корабли и куда стреляет компьютер
+    HumanField = Field()
     HumanReservField = Field()
     HumanFireField = Field()
     ComputerField = Field()
@@ -12,17 +13,13 @@ while gameflag:
     ComputerReservField = Field()
     print('Создаём Флот')
     HumaneFleet = Fleet()
-    print('Вводим двухзначные чиисла где первая цифра горизонталь а вторая вертикаль ')
+    print(T)
+    print('Корабли не могут распологатся вплотную друг к другу и по диагонали.')
     human = True
     generator_of_ships(HumanField, HumanReservField, HumaneFleet, human)
     ComputerFleet = Fleet()
     human = False
     generator_of_ships(ComputerField, ComputerReservField, ComputerFleet, human)
-    print('Поле компьютера')
-    print(ComputerField.graphic_field())
-    print('Поле игрока')
-    print(HumanField.graphic_field())
-    print('Начнём бой!!!')
     fire_to_ship(HumanField, HumanFireField, ComputerField, ComputerFireField, HumaneFleet, ComputerFleet)
     q = None
     while not (q in CONTROLLIST):
@@ -30,4 +27,6 @@ while gameflag:
 
     if q == 'Y' or q == 'y':
         gameflag = True
-    else:gameflag = False
+    else:
+        gameflag = False
+
